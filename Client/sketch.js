@@ -106,14 +106,14 @@ function drawPlayers() {
     circle(
       0,
       0,
-      myPlayer.range * 100
+      700
     )
   } else {
     arc(
       0,
       0,
-      myPlayer.range * 100,
-      myPlayer.range * 100,
+      700,
+      700,
       angle + radians(peripheralVision) / 2,
       angle - radians(peripheralVision) / 2
     );
