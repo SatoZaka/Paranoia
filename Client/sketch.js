@@ -90,6 +90,10 @@ function draw() {
   drawPlayers();
 }
 
+function mousePressed() {
+  addBullet(10, 680, 40, 8);
+}
+
 function drawPlayers() {
   for (let player in players) {
     // Draw player circle
