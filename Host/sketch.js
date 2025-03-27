@@ -1,5 +1,6 @@
 // Game setup
 let mapSize = 1000;
+let bullets = [];
 
 // Connections
 let peer;
@@ -68,6 +69,9 @@ const peripheralAmplitude = 180;
         updateData();
       } else {
         players[connection.peer] = data.player;
+        if (data.bullets) {
+          bullets.push(data.bullets);
+        }
         updateData();
       }
     });
@@ -285,6 +289,81 @@ function handleMovement() {
 
 // Host Functions
 
+function checkIfDead(playerId) {
+  if (playerId === myId) {
+    if (myPlayer.health <= 0) {
+      myPlayer.x = random(mapSize);
+      myPlayer.y = random(mapSize);
+      myPlayer.health = 100;
+      myItems = [];
+    }
+  } else if (players[playerId].health <= 0) {
+    connections[playerId].send("DIED");
+    delete players[playerId];
+  }
+}
+
+function updateBullets() {
+  for (var i = bullets.length - 1; i >= 0; i--) {
+    let bullet = bullets[i];
+    bullet.x += bullet.speed * Math.cos(bullet.angle);
+    bullet.y += bullet.speed * Math.sin(bullet.angle);
+    let bulletDelete = false;
+
+    for (let index in players) {
+      var player = players[index];
+      if (bullet.color !== player.color) {
+        const distanceToPlayer = Math.sqrt(
+          Math.pow(bullet.x - player.x, 2) + Math.pow(bullet.y - player.y, 2)
+        );
+        if (distanceToPlayer <= radius) {
+          player.health -= bullet.damage;
+          checkIfDead(index);
+          bulletDelete = true;
+        }
+      }
+    }
+
+    if (bullet.color !== myPlayer.color) {
+      const distanceToPlayer = Math.sqrt(
+        Math.pow(bullet.x - myPlayer.x, 2) + Math.pow(bullet.y - myPlayer.y, 2)
+      );
+      if (distanceToPlayer <= radius) {
+        myPlayer.health -= bullet.damage;
+        checkIfDead(myId);
+        bulletDelete = true;
+      }
+    }
+    const distance = Math.sqrt(
+      Math.pow(bullet.x - bullet.startX, 2) +
+        Math.pow(bullet.y - bullet.startY, 2)
+    );
+
+    if (distance >= bullet.range) bulletDelete = true;
+    if (bulletDelete) bullets.splice(i, 1);
+  }
+  updateData();
+}
+
+function addBullet(speed = 10, range = 480, damage = 10, amplitude = 10) {
+  amplitude /= 2;
+  let bulletAngle = atan2(mouseY - height / 2, mouseX - width / 2) + random(-radians(amplitude), radians(amplitude));
+  if (bulletAngle < -PI) bulletAngle += TWO_PI;
+  if (bulletAngle > PI) bulletAngle -= TWO_PI;
+  bullets.push({
+    color: myPlayer.color,
+    damage: damage,
+    range: range,
+    angle: bulletAngle,
+    speed: speed,
+    startX: myPlayer.x,
+    startY: myPlayer.y,
+    x: myPlayer.x,
+    y: myPlayer.y,
+  });
+  updateData();
+}
+
 function updateData() {
   for (const connection in connections) {
     if (connections[connection].open) {
@@ -292,7 +371,8 @@ function updateData() {
         players: {
           ...players,
           [myId]: myPlayer,
-        }
+        },
+        bullets: bullets
       });
     }
   }

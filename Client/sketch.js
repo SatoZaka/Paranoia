@@ -1,5 +1,6 @@
 // Game setup
 let mapSize = 1000;
+let bullets = [];
 
 // Connections
 let peer;
@@ -51,12 +52,14 @@ const peripheralAmplitude = 180;
           // Receive host's updates
           players = data.players;
           if (myPlayer.health !== data.players[myId].health) myPlayer.health = data.players[myId].health;
+          bullets = data.bullets;
           delete players[myId];
         } else {
 
           // No information (first gather)
           players = data.players;
           myPlayer = data.players[myId];
+          bullets = data.bullets;
           delete players[myId];
         }
       });
@@ -275,7 +278,27 @@ function handleMovement() {
 
 // Client Functions
 
-function updateData() {
+function addBullet(speed = 10, range = 480, damage = 10, amplitude = 10) {
+  amplitude /= 2;
+  let bulletAngle = atan2(mouseY - height / 2, mouseX - width / 2) + random(-radians(amplitude), radians(amplitude));
+  if (bulletAngle < -PI) bulletAngle += TWO_PI;
+  if (bulletAngle > PI) bulletAngle -= TWO_PI;
+  updateData(
+    {
+      color: myPlayer.color,
+      damage: damage,
+      range: range,
+      angle: bulletAngle,
+      speed: speed,
+      startX: myPlayer.x,
+      startY: myPlayer.y,
+      x: myPlayer.x,
+      y: myPlayer.y
+    }
+  )
+}
+
+function updateData(bulletsShot = undefined) {
   if (!connection) return;
-  connection.send({ player: myPlayer });
+  connection.send({ player: myPlayer, bullets: bulletsShot });
 }
