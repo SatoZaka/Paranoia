@@ -1,3 +1,6 @@
+// Game setup
+let mapSize = 1000;
+
 // Connections
 let peer;
 let myId;
@@ -6,6 +9,7 @@ let players = {};
 
 // Player setup
 let myPlayer;
+let radius = 15;
 
 // Connection setup
 (function connect() {
@@ -69,4 +73,45 @@ function draw() {
   if (!connection) return;
 
   background(50);
+  translate(width / 2, height / 2);
+
+  drawWorldBorders();
+  drawPlayers();
+}
+
+function drawPlayers() {
+  for (let player in players) {
+      let r = (players[player].color >> 16) & 0xff,
+          g = (players[player].color >> 8) & 0xff,
+          b = players[player].color & 0xff;
+      noStroke();
+      fill(r, g, b);
+      circle(
+          players[player].x - myPlayer.x,
+          players[player].y - myPlayer.y,
+          radius * 2
+      );
+  }
+
+  let r = (myPlayer.color >> 16) & 0xff,
+      g = (myPlayer.color >> 8) & 0xff,
+      b = myPlayer.color & 0xff;
+  noStroke();
+  fill(r, g, b);
+  circle(0, 0, radius * 2);
+}
+
+function drawWorldBorders() {
+  if (myId && myPlayer) {
+      let offset = createVector(myPlayer.x, myPlayer.y);
+      fill(205);
+      stroke(0);
+      strokeWeight(10);
+      rect(
+          -offset.x - radius,
+          -offset.y - radius,
+          mapSize + radius * 2,
+          mapSize + radius * 2
+      );
+  }
 }
