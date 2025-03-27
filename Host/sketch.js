@@ -84,6 +84,8 @@ function draw() {
   background(50);
   translate(width / 2, height / 2);
 
+  handleMovement();
+
   drawWorldBorders();
   drawPlayers();
 }
@@ -122,6 +124,38 @@ function drawWorldBorders() {
           mapSize + radius * 2,
           mapSize + radius * 2
       );
+  }
+}
+
+function handleMovement() {
+  if (myPlayer) {
+      let sendUpdate = false;
+
+      if (keyIsDown(LEFT_ARROW) || keyIsDown(65) || keyIsDown(97)) {
+          // LEFT_ARROW, 'A', 'a'
+          myPlayer.x -= 1;
+          if (myPlayer.x <= 0) myPlayer.x = 0;
+          sendUpdate = true;
+      }
+      if (keyIsDown(RIGHT_ARROW) || keyIsDown(68) || keyIsDown(100)) {
+          // RIGHT_ARROW, 'D', 'd'
+          myPlayer.x += 1;
+          if (myPlayer.x >= 1000) myPlayer.x = 1000;
+          sendUpdate = true;
+      }
+
+      if (keyIsDown(UP_ARROW) || keyIsDown(87) || keyIsDown(119)) {
+          myPlayer.y -= 1;
+          if (myPlayer.y <= 0) myPlayer.y = 0;
+          sendUpdate = true;
+      }
+      if (keyIsDown(DOWN_ARROW) || keyIsDown(83) || keyIsDown(115)) {
+          myPlayer.y += 1;
+          if (myPlayer.y >= 1000) myPlayer.y = 1000;
+          sendUpdate = true;
+      }
+
+      if (sendUpdate) updateData();
   }
 }
 
