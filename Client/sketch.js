@@ -10,6 +10,9 @@ let players = {};
 // Player setup
 let myPlayer;
 let radius = 15;
+let angle;
+let vision = 1;
+const peripheralAmplitude = 180;
 
 // Connection setup
 (function connect() {
@@ -42,12 +45,12 @@ let radius = 15;
           return alert("You died.\nRefresh the page to try again.\nHost ID: " + hostId);
         }
         if (players && myPlayer) {
-          
+
           // Receive host's updates
           players = data.players;
           delete players[myId];
         } else {
-          
+
           // No information (first gather)
           players = data.players;
           myPlayer = data.players[myId];
@@ -83,21 +86,42 @@ function draw() {
 
 function drawPlayers() {
   for (let player in players) {
-      let r = (players[player].color >> 16) & 0xff,
-          g = (players[player].color >> 8) & 0xff,
-          b = players[player].color & 0xff;
-      noStroke();
-      fill(r, g, b);
-      circle(
-          players[player].x - myPlayer.x,
-          players[player].y - myPlayer.y,
-          radius * 2
-      );
+    let r = (players[player].color >> 16) & 0xff,
+      g = (players[player].color >> 8) & 0xff,
+      b = players[player].color & 0xff;
+    noStroke();
+    fill(r, g, b);
+    circle(
+      players[player].x - myPlayer.x,
+      players[player].y - myPlayer.y,
+      radius * 2
+    );
+  }
+
+  noStroke();
+
+  const peripheralVision = peripheralAmplitude * vision;
+  fill(0);
+  if (peripheralVision <= 0) {
+    circle(
+      0,
+      0,
+      myPlayer.range * 100
+    )
+  } else {
+    arc(
+      0,
+      0,
+      myPlayer.range * 100,
+      myPlayer.range * 100,
+      angle + radians(peripheralVision) / 2,
+      angle - radians(peripheralVision) / 2
+    );
   }
 
   let r = (myPlayer.color >> 16) & 0xff,
-      g = (myPlayer.color >> 8) & 0xff,
-      b = myPlayer.color & 0xff;
+    g = (myPlayer.color >> 8) & 0xff,
+    b = myPlayer.color & 0xff;
   noStroke();
   fill(r, g, b);
   circle(0, 0, radius * 2);
@@ -105,48 +129,50 @@ function drawPlayers() {
 
 function drawWorldBorders() {
   if (myId && myPlayer) {
-      let offset = createVector(myPlayer.x, myPlayer.y);
-      fill(205);
-      stroke(0);
-      strokeWeight(10);
-      rect(
-          -offset.x - radius,
-          -offset.y - radius,
-          mapSize + radius * 2,
-          mapSize + radius * 2
-      );
+    let offset = createVector(myPlayer.x, myPlayer.y);
+    fill(205);
+    stroke(0);
+    strokeWeight(10);
+    rect(
+      -offset.x - radius,
+      -offset.y - radius,
+      mapSize + radius * 2,
+      mapSize + radius * 2
+    );
   }
 }
 
 function handleMovement() {
   if (myPlayer) {
-      let sendUpdate = false;
+    let sendUpdate = false;
 
-      if (keyIsDown(LEFT_ARROW) || keyIsDown(65) || keyIsDown(97)) {
-          // LEFT_ARROW, 'A', 'a'
-          myPlayer.x -= 1;
-          if (myPlayer.x <= 0) myPlayer.x = 0;
-          sendUpdate = true;
-      }
-      if (keyIsDown(RIGHT_ARROW) || keyIsDown(68) || keyIsDown(100)) {
-          // RIGHT_ARROW, 'D', 'd'
-          myPlayer.x += 1;
-          if (myPlayer.x >= 1000) myPlayer.x = 1000;
-          sendUpdate = true;
-      }
+    if (keyIsDown(LEFT_ARROW) || keyIsDown(65) || keyIsDown(97)) {
+      // LEFT_ARROW, 'A', 'a'
+      myPlayer.x -= 1;
+      if (myPlayer.x <= 0) myPlayer.x = 0;
+      sendUpdate = true;
+    }
+    if (keyIsDown(RIGHT_ARROW) || keyIsDown(68) || keyIsDown(100)) {
+      // RIGHT_ARROW, 'D', 'd'
+      myPlayer.x += 1;
+      if (myPlayer.x >= 1000) myPlayer.x = 1000;
+      sendUpdate = true;
+    }
 
-      if (keyIsDown(UP_ARROW) || keyIsDown(87) || keyIsDown(119)) {
-          myPlayer.y -= 1;
-          if (myPlayer.y <= 0) myPlayer.y = 0;
-          sendUpdate = true;
-      }
-      if (keyIsDown(DOWN_ARROW) || keyIsDown(83) || keyIsDown(115)) {
-          myPlayer.y += 1;
-          if (myPlayer.y >= 1000) myPlayer.y = 1000;
-          sendUpdate = true;
-      }
+    if (keyIsDown(UP_ARROW) || keyIsDown(87) || keyIsDown(119)) {
+      myPlayer.y -= 1;
+      if (myPlayer.y <= 0) myPlayer.y = 0;
+      sendUpdate = true;
+    }
+    if (keyIsDown(DOWN_ARROW) || keyIsDown(83) || keyIsDown(115)) {
+      myPlayer.y += 1;
+      if (myPlayer.y >= 1000) myPlayer.y = 1000;
+      sendUpdate = true;
+    }
 
-      if (sendUpdate) updateData();
+    angle = atan2(mouseY - height / 2, mouseX - width / 2);
+
+    if (sendUpdate) updateData();
   }
 }
 
@@ -154,5 +180,5 @@ function handleMovement() {
 
 function updateData() {
   if (!connection) return;
-  connection.send({player:myPlayer});
+  connection.send({ player: myPlayer });
 }
