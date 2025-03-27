@@ -50,6 +50,7 @@ const peripheralAmplitude = 180;
 
           // Receive host's updates
           players = data.players;
+          if (myPlayer.health !== data.players[myId].health) myPlayer.health = data.players[myId].health;
           delete players[myId];
         } else {
 
@@ -88,6 +89,7 @@ function draw() {
 
 function drawPlayers() {
   for (let player in players) {
+    // Draw player circle
     let r = (players[player].color >> 16) & 0xff,
       g = (players[player].color >> 8) & 0xff,
       b = players[player].color & 0xff;
@@ -98,8 +100,41 @@ function drawPlayers() {
       players[player].y - myPlayer.y,
       radius * 2
     );
+
+    // Draw player's health
+    strokeWeight(5);
+    let health = players[player].health;
+    if (health <= 50) {
+      r = 255;
+      g = Math.round((255 * health) / 50);
+      b = 0;
+    } else if (health <= 100) {
+      r = Math.round(255 - (255 * (health - 50)) / 50);
+      g = 255;
+      b = 0;
+    } else {
+      r = 0;
+      b = 255;
+      g = Math.round(255 - (255 * (health - 100)) / 100);
+      stroke(0, 255, 0);
+      circle(
+        players[player].x - myPlayer.x,
+        players[player].y - myPlayer.y,
+        radius * 2 + 5
+      );
+    }
+    stroke(r, g, b);
+    arc(
+      players[player].x - myPlayer.x,
+      players[player].y - myPlayer.y,
+      radius * 2 + 5,
+      radius * 2 + 5,
+      -HALF_PI,
+      radians(health * 3.6) - HALF_PI
+    );
   }
 
+  // Draw Paranoia
   noStroke();
 
   const peripheralVision = peripheralAmplitude * vision;
@@ -140,12 +175,41 @@ function drawPlayers() {
     );
   }
 
+  // Draw my player circle
   let r = (myPlayer.color >> 16) & 0xff,
     g = (myPlayer.color >> 8) & 0xff,
     b = myPlayer.color & 0xff;
   noStroke();
   fill(r, g, b);
   circle(0, 0, radius * 2);
+
+  // Draw my player's health
+  strokeWeight(5);
+  let health = myPlayer.health;
+  if (health <= 50) {
+    r = 255;
+    g = Math.round((255 * health) / 50);
+    b = 0;
+  } else if (health <= 100) {
+    r = Math.round(255 - (255 * (health - 50)) / 50);
+    g = 255;
+    b = 0;
+  } else {
+    r = 0;
+    b = 255;
+    g = Math.round(255 - (255 * (health - 100)) / 100);
+    stroke(0, 255, 0);
+    circle(0, 0, radius * 2 + 5);
+  }
+  stroke(r, g, b);
+  arc(
+    0,
+    0,
+    radius * 2 + 5,
+    radius * 2 + 5,
+    -HALF_PI,
+    radians(health * 3.6) - HALF_PI
+  );
 }
 
 function drawWorldBorders() {
