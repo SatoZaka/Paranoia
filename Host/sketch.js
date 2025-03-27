@@ -96,6 +96,7 @@ function draw() {
   translate(width / 2, height / 2);
 
   handleMovement();
+  updateBullets();
 
   drawWorldBorders();
   drawPlayers();
@@ -336,7 +337,7 @@ function updateBullets() {
     }
     const distance = Math.sqrt(
       Math.pow(bullet.x - bullet.startX, 2) +
-        Math.pow(bullet.y - bullet.startY, 2)
+      Math.pow(bullet.y - bullet.startY, 2)
     );
 
     if (distance >= bullet.range) bulletDelete = true;
