@@ -13,6 +13,7 @@ let myPlayer;
 let radius = 15;
 let angle;
 let vision = 1;
+const fovealAmplitude = 45;
 const peripheralAmplitude = 180;
 
 // Connection setup
@@ -125,6 +126,25 @@ function drawPlayers() {
       700,
       angle + radians(peripheralVision) / 2,
       angle - radians(peripheralVision) / 2
+    );
+  }
+
+  const fovealVision = fovealAmplitude * (vision - 0.5) * 2;
+  fill(0, 0, 0, 224);
+  if (fovealVision <= 0) {
+    circle(
+      0,
+      0,
+      700
+    )
+  } else {
+    arc(
+      0,
+      0,
+      700,
+      700,
+      angle + radians(fovealVision) / 2,
+      angle - radians(fovealVision) / 2
     );
   }
 
