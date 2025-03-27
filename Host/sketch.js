@@ -13,6 +13,7 @@ let myPlayer;
 let radius = 15;
 let angle;
 let vision = 1;
+const visionRecoveryPerSecond = 2;
 const fovealAmplitude = 45;
 const peripheralAmplitude = 180;
 
@@ -199,7 +200,19 @@ function handleMovement() {
       sendUpdate = true;
     }
 
-    angle = atan2(mouseY - height / 2, mouseX - width / 2);
+    vision += visionRecoveryPerSecond * deltaTime / 1000;
+
+    var newAngle = atan2(mouseY - height / 2, mouseX - width / 2);
+    if (angle !== undefined && newAngle !== undefined && newAngle != angle) {
+      var deltaAngle = Math.abs(newAngle - angle);
+      if (deltaAngle > PI) deltaAngle = Math.abs(deltaAngle - TWO_PI);
+      var newVision = vision - (deltaAngle * deltaTime) / 50;
+      if (vision >= 0.375 && newVision < 0.375) newVision = 0.375;
+      vision = newVision;
+      sendUpdate = true;
+    }
+    if (vision > 1) vision = 1;
+    angle = newAngle;
 
     if (sendUpdate) updateData();
   }
