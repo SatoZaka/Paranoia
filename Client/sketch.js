@@ -1,5 +1,11 @@
 // Game setup
+const gameWindow = {
+  width: 480,
+  height: 480
+};
+const inventoryHeight = 60;
 let mapSize = 1000;
+let itemList = [];
 let bullets = [];
 
 // Connections
@@ -16,6 +22,8 @@ let vision = 1;
 const visionRecoveryPerSecond = 2;
 const fovealAmplitude = 45;
 const peripheralAmplitude = 180;
+let inventory = [];
+let selectedItem = -1;
 
 // Connection setup
 (function connect() {
@@ -75,19 +83,49 @@ const peripheralAmplitude = 180;
 })();
 
 function setup() {
-  createCanvas(480, 480);
+  createCanvas(gameWindow.width, gameWindow.height + inventoryHeight);
 }
 
 function draw() {
   if (!connection) return;
 
   background(50);
-  translate(width / 2, height / 2);
+  translate(gameWindow.width / 2, gameWindow.height / 2);
 
   handleMovement();
 
   drawWorldBorders();
   drawPlayers();
+  drawInventory();
+}
+
+function keyPressed() {
+  if (["1", "2", "3", "4"].includes(key)) {
+    let newSlot = parseInt(key) - 1;
+    if (newSlot === selectedItem) newSlot = -1;
+    selectedItem = newSlot;
+  }
+}
+
+function drawInventory() {
+  const offset = 1;
+  strokeWeight(offset * 2);
+  fill(50);
+  textAlign(CENTER, CENTER);
+
+  // Draw inventory slots
+  for (let i = 0; i < 4; i++) {
+    stroke(255);
+    if (selectedItem === i) stroke(0, 255, 0);
+    rect(
+      gameWindow.width / 4 * i,
+      gameWindow.height + offset,
+      gameWindow.width / 4,
+      inventoryHeight - offset * 2
+    );
+    let itemName = inventory[i].name || undefined;
+    if (itemName) text(inventory[i].name, gameWindow.width / 8 * (i * 2 + 1), gameWindow.height + inventoryHeight / 2);
+  }
 }
 
 function drawPlayers() {
